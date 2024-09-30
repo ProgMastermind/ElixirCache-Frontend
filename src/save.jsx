@@ -99,22 +99,25 @@ const StyledStepper = styled(Stepper)(({ theme }) => ({
 }));
 
 const EnhancedRedisCLI = () => {
+  const [darkMode, setDarkMode] = useState(true);
+  const theme = React.useMemo(() => createCustomTheme(darkMode ? 'dark' : 'light'), [darkMode]);
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const [masterConnected, setMasterConnected] = useState(false);
   const [slaveConnected, setSlaveConnected] = useState(false);
   const [masterOutput, setMasterOutput] = useState([]);
   const [slaveOutput, setSlaveOutput] = useState([]);
   const [masterInput, setMasterInput] = useState('');
   const [slaveInput, setSlaveInput] = useState('');
+  const [activeStep, setActiveStep] = useState(0);
   const [replicationInfo, setReplicationInfo] = useState(null);
+
   const masterOutputRef = useRef(null);
   const slaveOutputRef = useRef(null);
   const masterWs = useRef(null);
   const slaveWs = useRef(null);
-  const [handshakeSteps] = useState(['Initiate', 'PING', 'REPLCONF', 'PSYNC', 'Complete']);
-  const [activeStep, setActiveStep] = useState(0);
-  const [darkMode, setDarkMode] = useState(true);
-  const theme = React.useMemo(() => createCustomTheme(darkMode ? 'dark' : 'light'), [darkMode]);
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const handshakeSteps = ['Initiate', 'PING', 'REPLCONF', 'PSYNC', 'Complete'];
 
   useEffect(() => {
     if (masterOutputRef.current) {
@@ -125,34 +128,14 @@ const EnhancedRedisCLI = () => {
     }
   }, [masterOutput, slaveOutput]);
 
-  // useEffect(() => {
-  //   if (masterConnected) {
-  //     const pingInterval = setInterval(() => {
-  //       if (masterWs.current && masterWs.current.readyState === WebSocket.OPEN) {
-  //         masterWs.current.send(JSON.stringify({ type: 'COMMAND', command: 'PING' }));
-  //       }
-  //     }, 250000);
-  //     return () => clearInterval(pingInterval);
-  //   }
-  // }, [masterConnected]);
-
-  // useEffect(() => {
-  //   if (slaveConnected) {
-  //     const pingInterval = setInterval(() => {
-  //       if (slaveWs.current && slaveWs.current.readyState === WebSocket.OPEN) {
-  //         slaveWs.current.send(JSON.stringify({ type: 'COMMAND', command: 'PING' }));
-  //       }
-  //     }, 250000);
-  //     return () => clearInterval(pingInterval);
-  //   }
-  // }, [slaveConnected]);
-  
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (masterWs.current && masterWs.current.readyState === WebSocket.OPEN) {
-        masterWs.current.send(JSON.stringify({ type: 'reset_server' }));
+      if (masterConnected) {
+        handleDisconnectAndReset({ type: 'Master' });
       }
-      // We don't need to send from slave, as reset should only be triggered from master
+      if (slaveConnected) {
+        handleDisconnectAndReset({ type: 'Slave' });
+      }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -160,7 +143,8 @@ const EnhancedRedisCLI = () => {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, []);
+  }, [masterConnected, slaveConnected]);
+
 
   const handleMasterConnect = () => {
     masterWs.current = new WebSocket('ws://localhost:3001/ws/master');
@@ -184,49 +168,6 @@ const EnhancedRedisCLI = () => {
     slaveWs.current.onclose = handleSlaveClose;
   };
 
-  const parseRedisResponse = (response) => {
-    console.log(response)
-
-    if (response.trim() === "$-1") {
-      return "(nil)";
-    }
-    
-    const lines = response.split('\r\n');
-    let result = [];
-    let i = 0;
-  
-    const parseItem = () => {
-      if (i >= lines.length) return null;
-      const line = lines[i];
-      i++;
-  
-      switch (line[0]) {
-        case '+': return line.slice(1);
-        case '-': return `Error: ${line.slice(1)}`;
-        case ':': return line.slice(1);
-        case '$': 
-          const length = parseInt(line.slice(1));
-          if (length === -1) return null;
-          return lines[i++];
-        case '*':
-          const count = parseInt(line.slice(1));
-          if (count === -1) return null;
-          return Array.from({length: count}, parseItem);
-        default: return line;
-      }
-    };
-  
-    while (i < lines.length) {
-      const item = parseItem();
-      if (item !== null) {
-        result.push(item);
-      }
-    }
-  
-    return result.flat().join('\n');
-  };
-
-
   const handleMasterMessage = (event) => {
     try {
       const data = JSON.parse(event.data);
@@ -238,6 +179,8 @@ const EnhancedRedisCLI = () => {
       } else if (data.type === 'COMMAND_RESULT') {
         const parsedResult = parseRedisResponse(data.result);
         setMasterOutput(prev => [...prev, `> ${parsedResult}`]);
+      } else if (data.type === 'RESET_RESULT') {
+        setMasterOutput(prev => [...prev, `> ${data.message}`]);
       }
     } catch (error) {
       console.error('Error parsing message:', error);
@@ -245,7 +188,6 @@ const EnhancedRedisCLI = () => {
     }
   };
 
-  
   const handleSlaveMessage = (event) => {
     try {
       const data = JSON.parse(event.data);
@@ -257,19 +199,13 @@ const EnhancedRedisCLI = () => {
       } else if (data.type === 'COMMAND_RESULT') {
         const parsedResult = parseRedisResponse(data.result);
         setSlaveOutput(prev => [...prev, `> ${parsedResult}`]);
+      } else if (data.type === 'RESET_RESULT') {
+        setSlaveOutput(prev => [...prev, `> ${data.message}`]);
       }
     } catch (error) {
       console.error('Error parsing message:', error);
       setSlaveOutput(prev => [...prev, event.data]);
     }
-  };
-
-  const updateHandshakeSteps = (message) => {
-    if (message.includes("Handshake started")) setActiveStep(0);
-    else if (message.includes("PING")) setActiveStep(1);
-    else if (message.includes("REPLCONF")) setActiveStep(2);
-    else if (message.includes("PSYNC")) setActiveStep(3);
-    else if (message.includes("Handshake completed successfully")) setActiveStep(4);
   };
 
   const handleMasterError = (error) => {
@@ -308,12 +244,75 @@ const EnhancedRedisCLI = () => {
     setSlaveInput('');
   };
 
+  const handleDisconnectAndReset = (instance) => {
+    if (instance.type === 'Master') {
+      if (masterWs.current && masterWs.current.readyState === WebSocket.OPEN) {
+        masterWs.current.send(JSON.stringify({ type: 'reset_server' }));
+        masterWs.current.close();
+      }
+      setMasterConnected(false);
+      setMasterOutput([]);
+      setMasterInput('');
+    } else {
+      if (slaveWs.current && slaveWs.current.readyState === WebSocket.OPEN) {
+        slaveWs.current.close();
+      }
+      setSlaveConnected(false);
+      setSlaveOutput([]);
+      setSlaveInput('');
+    }
+  };
+
   const handleCopyOutput = (output) => {
     navigator.clipboard.writeText(output.join('\n'));
   };
 
   const handleClearOutput = (setOutput) => {
     setOutput([]);
+  };
+
+  const updateHandshakeSteps = (message) => {
+    if (message.includes("Handshake started")) setActiveStep(0);
+    else if (message.includes("PING")) setActiveStep(1);
+    else if (message.includes("REPLCONF")) setActiveStep(2);
+    else if (message.includes("PSYNC")) setActiveStep(3);
+    else if (message.includes("Handshake completed successfully")) setActiveStep(4);
+  };
+
+  const parseRedisResponse = (response) => {
+    const lines = response.split('\r\n');
+    let result = [];
+    let i = 0;
+  
+    const parseItem = () => {
+      if (i >= lines.length) return null;
+      const line = lines[i];
+      i++;
+  
+      switch (line[0]) {
+        case '+': return line.slice(1);
+        case '-': return `Error: ${line.slice(1)}`;
+        case ':': return line.slice(1);
+        case '$': 
+          const length = parseInt(line.slice(1));
+          if (length === -1) return null;
+          return lines[i++];
+        case '*':
+          const count = parseInt(line.slice(1));
+          if (count === -1) return null;
+          return Array.from({length: count}, parseItem);
+        default: return line;
+      }
+    };
+  
+    while (i < lines.length) {
+      const item = parseItem();
+      if (item !== null) {
+        result.push(item);
+      }
+    }
+  
+    return result.flat().join('\n');
   };
 
   const renderInstance = (instance) => (
@@ -423,20 +422,26 @@ const EnhancedRedisCLI = () => {
         </Toolbar>
       </AppBar>
       <Container maxWidth="xl" sx={{ mt: 4 }}>
-        <Box mb={4}>
-          <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>Replication Handshake Process</Typography>
-          <StyledStepper activeStep={activeStep} alternativeLabel={!isMobile} orientation={isMobile ? "vertical" : "horizontal"}>
-            {handshakeSteps.map((label, index) => (
-              <Step key={label}>
-                <StepLabel>
-                  <Tooltip title={`Step ${index + 1}: ${label}`}>
-                    <span>{label}</span>
-                  </Tooltip>
-                </StepLabel>
-              </Step>
-            ))}
-          </StyledStepper>
-        </Box>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Box mb={4}>
+            <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>Replication Handshake Process</Typography>
+            <StyledStepper activeStep={activeStep} alternativeLabel={!isMobile} orientation={isMobile ? "vertical" : "horizontal"}>
+              {handshakeSteps.map((label, index) => (
+                <Step key={label}>
+                  <StepLabel>
+                    <Tooltip title={`Step ${index + 1}: ${label}`}>
+                      <span>{label}</span>
+                    </Tooltip>
+                  </StepLabel>
+                </Step>
+              ))}
+            </StyledStepper>
+          </Box>
+        </motion.div>
         <Stack direction={{ xs: 'column', lg: 'row' }} spacing={3}>
           {renderInstance({
             type: 'Master',
@@ -464,37 +469,43 @@ const EnhancedRedisCLI = () => {
           })}
         </Stack>
         {replicationInfo && (
-          <Box mt={4}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
-                  <Storage sx={{ mr: 1 }} /> Replication Info
-                </Typography>
-                <Divider sx={{ mb: 3 }} />
-                <Stack direction="row" flexWrap="wrap" gap={2}>
-                  {Object.entries(replicationInfo).map(([key, value]) => (
-                    <Paper
-                      key={key}
-                      elevation={0}
-                      sx={{
-                        p: 2,
-                        flexGrow: 1,
-                        flexBasis: { xs: '100%', sm: '45%', md: '30%' },
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        backgroundColor: theme.palette.background.default,
-                      }}
-                    >
-                      <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-                        {key.replace(/_/g, ' ').toUpperCase()}
-                      </Typography>
-                      <Typography variant="body1" fontWeight="medium">{value}</Typography>
-                    </Paper>
-                  ))}
-                </Stack>
-              </CardContent>
-            </Card>
-          </Box>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <Box mt={4}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
+                    <Storage sx={{ mr: 1 }} /> Replication Info
+                  </Typography>
+                  <Divider sx={{ mb: 3 }} />
+                  <Stack direction="row" flexWrap="wrap" gap={2}>
+                    {Object.entries(replicationInfo).map(([key, value]) => (
+                      <Paper
+                        key={key}
+                        elevation={0}
+                        sx={{
+                          p: 2,
+                          flexGrow: 1,
+                          flexBasis: { xs: '100%', sm: '45%', md: '30%' },
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          backgroundColor: theme.palette.background.default,
+                        }}
+                      >
+                        <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+                          {key.replace(/_/g, ' ').toUpperCase()}
+                        </Typography>
+                        <Typography variant="body1" fontWeight="medium">{value}</Typography>
+                      </Paper>
+                    ))}
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Box>
+          </motion.div>
         )}
       </Container>
     </ThemeProvider>
