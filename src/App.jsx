@@ -163,7 +163,9 @@ const EnhancedRedisCLI = () => {
   }, []);
 
   const handleMasterConnect = () => {
-    masterWs.current = new WebSocket('ws://localhost:3001/ws/master');
+    // masterWs.current = new WebSocket('ws://localhost:3001/ws/master');
+    // masterWs.current = new WebSocket('wss://elixir-backend-yf51.onrender.com/ws/master');
+    masterWs.current = new WebSocket('wss://elixircache.gigalixirapp.com/ws/master');
     masterWs.current.onopen = () => {
       setMasterConnected(true);
       setMasterOutput(prev => [...prev, '> Connected to Redis Master']);
@@ -175,6 +177,8 @@ const EnhancedRedisCLI = () => {
 
   const handleSlaveConnect = () => {
     slaveWs.current = new WebSocket('ws://localhost:3001/ws/slave');
+    // slaveWs.current = new WebSocket('wss://elixir-backend-yf51.onrender.com/ws/slave');
+    slaveWs.current = new WebSocket('wss://elixircache.gigalixirapp.com/ws/slave');
     slaveWs.current.onopen = () => {
       setSlaveConnected(true);
       setSlaveOutput(prev => [...prev, '> Connected to Redis Slave']);
@@ -190,7 +194,7 @@ const EnhancedRedisCLI = () => {
     if (response.trim() === "$-1") {
       return "(nil)";
     }
-    
+
     const lines = response.split('\r\n');
     let result = [];
     let i = 0;
