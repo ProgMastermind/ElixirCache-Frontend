@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { motion, useAnimation } from 'framer-motion';
 import { FiZap, FiBook, FiDatabase, FiServer, FiCloud, FiHardDrive, FiCpu, FiLayers } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 
 const gradientAnimation = keyframes`
   0% { background-position: 0% 50%; }
@@ -75,7 +76,7 @@ const NavLinks = styled.div`
   gap: 1.5rem;
 `;
 
-const NavLink = styled.a`
+const NavLink = styled(Link)`
   color: #94a3b8;
   text-decoration: none;
   font-weight: 500;
@@ -112,6 +113,8 @@ const ContentWrapper = styled.div`
   margin: 0 auto;
   padding: 8rem 2rem 4rem;
   flex-grow: 1;
+  position: relative;
+  z-index: 1;
 `;
 
 const TextContent = styled.div`
@@ -251,7 +254,8 @@ const BackgroundAnimation = styled.div`
 const AnimatedBackgroundCircle = styled(motion.div)`
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(96, 165, 250, 0.1) 0%, rgba(52, 211, 153, 0.1) 100%);
+  background: ${props => props.color};
+  opacity: 0.5;
 `;
 
 const ElixirCacheLogo = () => {
@@ -313,7 +317,7 @@ const AnimatedBackground = () => {
     return Array.from({ length: particleCount }).map(() => ({
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: Math.random() * 10 + 5,
+      size: Math.random() * 5 + 4,
       color: colors[Math.floor(Math.random() * colors.length)],
       duration: Math.random() * 20 + 10,
     }));
@@ -329,11 +333,11 @@ const AnimatedBackground = () => {
             left: `${particle.x}%`,
             width: `${particle.size}px`,
             height: `${particle.size}px`,
-            background: particle.color,
           }}
+          color={particle.color}
           animate={{
             y: ['0%', '100%'],
-            opacity: [0.2, 0.8, 0.2],
+            opacity: [0.2, 0.5, 0.2],
           }}
           transition={{
             duration: particle.duration,
@@ -364,6 +368,7 @@ const ElixirCacheHero = () => {
 
   return (
     <HeroContainer>
+      <AnimatedBackground />
       <NavBar>
         <Logo>
           <SmallLogo>
@@ -420,7 +425,7 @@ const ElixirCacheHero = () => {
           <ButtonGroup>
             <Button
               className="primary"
-              href="#demo"
+              href="/demo"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -428,7 +433,7 @@ const ElixirCacheHero = () => {
             </Button>
             <Button
               className="secondary"
-              href="#docs"
+              href="/documentation"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -480,7 +485,6 @@ const ElixirCacheHero = () => {
           />
         </LogoContainer>
       </ContentWrapper>
-      <AnimatedBackground />
     </HeroContainer>
   );
 };

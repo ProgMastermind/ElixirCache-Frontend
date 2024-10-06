@@ -1,145 +1,439 @@
-import React, { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import * as THREE from 'three';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Text, Box, OrbitControls } from '@react-three/drei';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import styled from 'styled-components';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiZap, FiServer, FiDatabase, FiCloud, FiCpu, FiLayers, FiSend, FiDownload, FiCode } from 'react-icons/fi';
+import ElixirCacheHero from './ElixirCacheHero';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
-const HeroSection = () => (
-  <div className="relative h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900">
-    <Canvas className="absolute inset-0">
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} />
-      <OrbitControls enableZoom={false} enablePan={false} />
-      <AnimatedCube />
-    </Canvas>
-    <div className="relative z-10 text-center">
-      <motion.h1 
-        className="text-6xl font-bold text-white mb-4"
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-      >
-        ElixirCache
-      </motion.h1>
-      <motion.p 
-        className="text-xl text-purple-200 mb-8"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4, duration: 0.8 }}
-      >
-        Unleash the power of lightning-fast data storage
-      </motion.p>
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8, duration: 0.8 }}
-      >
-        <button className="bg-purple-500 text-white px-8 py-3 rounded-full text-lg font-semibold mr-4 hover:bg-purple-600 transition duration-300">
-          Documentation
-        </button>
-        <button className="bg-transparent border-2 border-purple-500 text-purple-500 px-8 py-3 rounded-full text-lg font-semibold hover:bg-purple-500 hover:text-white transition duration-300">
-          Try It Now
-        </button>
-      </motion.div>
-    </div>
-  </div>
-);
+const LandingPage = styled.div`
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+`;
 
-const AnimatedCube = () => {
-  const meshRef = useRef();
-  useFrame((state, delta) => {
-    meshRef.current.rotation.x += delta * 0.2;
-    meshRef.current.rotation.y += delta * 0.3;
-  });
+const FeaturesSection = styled.section`
+  padding: 6rem 2rem;
+  background: #1a2234;
+  margin-top: -4rem;
+`;
+
+const SectionTitle = styled(motion.h2)`
+  font-size: 3rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 3rem;
+  background: linear-gradient(to right, #60a5fa, #34d399);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+`;
+
+const FeatureGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+`;
+
+const FeatureCard = styled(motion.div)`
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 1rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 30px rgba(0, 0, 0, 0.2);
+  }
+`;
+
+const FeatureIcon = styled.div`
+  font-size: 3rem;
+  color: #60a5fa;
+  margin-bottom: 1rem;
+`;
+
+const FeatureTitle = styled.h3`
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #ffffff;
+`;
+
+const FeatureDescription = styled.p`
+  color: #94a3b8;
+  font-size: 1rem;
+`;
+
+const ShowcaseSection = styled.section`
+  padding: 6rem 2rem;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+`;
+
+const ShowcaseContainer = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+`;
+
+const ShowcaseGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+
+  @media (min-width: 1024px) {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+  }
+`;
+
+const CodeBlock = styled(SyntaxHighlighter)`
+  border-radius: 1rem;
+  padding: 1.5rem !important;
+  font-size: 0.9rem !important;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  max-height: 400px;
+  overflow-y: auto;
+`;
+
+const DemoContainer = styled.div`
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+`;
+
+const DemoTitle = styled.h3`
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const DemoContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const DemoInputGroup = styled(motion.div)`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const DemoInput = styled.input`
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 1rem;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 1rem;
+`;
+
+const DemoButton = styled.button`
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: #60a5fa;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  &:hover {
+    background: #3b82f6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+`;
+
+const DemoResult = styled.div`
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0.5rem;
+  color: #34d399;
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+`;
+
+const Footer = styled.footer`
+  background: #0f172a;
+  padding: 3rem 2rem;
+  text-align: center;
+  color: #94a3b8;
+`;
+
+const FooterLinks = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+`;
+
+const FooterLink = styled(Link)`
+  color: #60a5fa;
+  text-decoration: none;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: #34d399;
+  }
+`;
+
+const Copyright = styled.div`
+  font-size: 0.9rem;
+`;
+
+const ElixirCacheLandingPage = () => {
+  const [key, setKey] = useState('');
+  const [value, setValue] = useState('');
+  const [result, setResult] = useState('');
+  const [isSetMode, setIsSetMode] = useState(true);
+  const socketRef = useRef(null);
+
+  useEffect(() => {
+    socketRef.current = new WebSocket('wss://elixircache.gigalixirapp.com/ws/master');
+
+    socketRef.current.onopen = () => {
+      console.log('Connected to ElixirCache');
+    };
+
+    socketRef.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log('Received response:', data);
+      if (data.type === 'COMMAND_RESULT') {
+        setResult(data.result);
+      }
+    };
+
+    return () => {
+      if (socketRef.current) socketRef.current.close();
+    };
+  }, []);
+
+  const handleSet = () => {
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify({
+        type: 'COMMAND',
+        command: `SET ${key} ${value}`
+      }));
+      setIsSetMode(false);
+    }
+  };
+
+  const handleGet = () => {
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify({
+        type: 'COMMAND',
+        command: `GET ${key}`
+      }));
+      setIsSetMode(true);
+    }
+  };
+
+  const features = [
+    { icon: <FiZap />, title: "Lightning Fast", description: "Experience unparalleled speed with our optimized in-memory storage system." },
+    { icon: <FiServer />, title: "Highly Scalable", description: "Effortlessly handle increasing loads as your application grows." },
+    { icon: <FiDatabase />, title: "Flexible Data Structures", description: "Support for various data types and complex structures including streams." },
+    { icon: <FiCloud />, title: "Replication Support", description: "Built-in master-slave replication for improved reliability and performance." },
+    { icon: <FiCpu />, title: "Efficient Command Processing", description: "Optimized command execution for SET, GET, INCR, and more." },
+    { icon: <FiLayers />, title: "Transaction Support", description: "MULTI, EXEC, and DISCARD commands for atomic operations." },
+  ];
+
+  const connectionCode = `
+import WebSocket from 'websocket';
+
+const socket = new WebSocket('wss://elixircache.gigalixirapp.com/ws/master');
+
+socket.onopen = () => {
+  console.log('Connected to ElixirCache');
+};
+
+socket.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  console.log('Received:', data);
+  if (data.type === 'COMMAND_RESULT') {
+    console.log('Result:', data.result);
+  }
+};
+
+function sendCommand(command) {
+  if (socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify({
+      type: 'COMMAND',
+      command: command
+    }));
+  }
+}
+
+// Example usage
+sendCommand('SET mykey myvalue');
+sendCommand('GET mykey');
+  `.trim();
 
   return (
-    <Box ref={meshRef} args={[3, 3, 3]} position={[0, 0, 0]}>
-      <meshStandardMaterial color="#8B5CF6" />
-      <Text
-        position={[0, 0, 1.51]}
-        fontSize={0.5}
-        color="#ffffff"
-        anchorX="center"
-        anchorY="middle"
-      >
-        Elixir
-      </Text>
-      <Text
-        position={[1.51, 0, 0]}
-        fontSize={0.5}
-        color="#ffffff"
-        anchorX="center"
-        anchorY="middle"
-        rotation={[0, Math.PI / 2, 0]}
-      >
-        Cache
-      </Text>
-    </Box>
+    <LandingPage>
+      <ElixirCacheHero />
+
+      <FeaturesSection id="features">
+        <SectionTitle
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          Why Choose ElixirCache?
+        </SectionTitle>
+        <FeatureGrid>
+          {features.map((feature, index) => (
+            <FeatureCard
+              key={index}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              viewport={{ once: true }}
+            >
+              <FeatureIcon>{feature.icon}</FeatureIcon>
+              <FeatureTitle>{feature.title}</FeatureTitle>
+              <FeatureDescription>{feature.description}</FeatureDescription>
+            </FeatureCard>
+          ))}
+        </FeatureGrid>
+      </FeaturesSection>
+
+      <ShowcaseSection>
+        <ShowcaseContainer>
+          <SectionTitle
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            Experience the Power of ElixirCache
+          </SectionTitle>
+          <ShowcaseGrid>
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              <DemoTitle>
+                <FiCode />
+                Connect with Ease
+              </DemoTitle>
+              <CodeBlock language="javascript" style={atomOneDark}>
+                {connectionCode}
+              </CodeBlock>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+            >
+              <DemoContainer>
+                <DemoTitle>Try it Out</DemoTitle>
+                <DemoContent>
+                  <AnimatePresence mode="wait">
+                    {isSetMode ? (
+                      <DemoInputGroup
+                        key="set"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <DemoInput
+                          type="text"
+                          placeholder="Key"
+                          value={key}
+                          onChange={(e) => setKey(e.target.value)}
+                        />
+                        <DemoInput
+                          type="text"
+                          placeholder="Value"
+                          value={value}
+                          onChange={(e) => setValue(e.target.value)}
+                        />
+                      </DemoInputGroup>
+                    ) : (
+                      <DemoInputGroup
+                        key="get"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <DemoInput
+                          type="text"
+                          placeholder="Key"
+                          value={key}
+                          onChange={(e) => setKey(e.target.value)}
+                        />
+                      </DemoInputGroup>
+                    )}
+                  </AnimatePresence>
+                  <ButtonGroup>
+                    <DemoButton onClick={handleSet} disabled={!isSetMode}>
+                      <FiSend /> SET
+                    </DemoButton>
+                    <DemoButton onClick={handleGet} disabled={isSetMode}>
+                      <FiDownload /> GET
+                    </DemoButton>
+                  </ButtonGroup>
+                  {result && <DemoResult>{result}</DemoResult>}
+                </DemoContent>
+              </DemoContainer>
+            </motion.div>
+          </ShowcaseGrid>
+        </ShowcaseContainer>
+      </ShowcaseSection>
+
+      <Footer>
+        <FooterLinks>
+          <FooterLink to="#features">Features</FooterLink>
+          <FooterLink to="#docs">Documentation</FooterLink>
+          <FooterLink as="a" href="https://github.com/yourusername/elixircache" target="_blank" rel="noopener noreferrer">GitHub</FooterLink>
+          <FooterLink to="#contact">Contact</FooterLink>
+        </FooterLinks>
+        <Copyright>© 2023 ElixirCache. All rights reserved.</Copyright>
+      </Footer>
+    </LandingPage>
   );
 };
 
-const FeatureSection = ({ title, description, icon }) => (
-  <motion.div 
-    className="bg-white rounded-lg p-6 shadow-lg"
-    whileHover={{ scale: 1.05 }}
-    transition={{ type: "spring", stiffness: 300 }}
-  >
-    <div className="text-purple-600 mb-4">{icon}</div>
-    <h3 className="text-xl font-semibold mb-2">{title}</h3>
-    <p className="text-gray-600">{description}</p>
-  </motion.div>
-);
-
-const ElixirCacheLanding = () => {
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <HeroSection />
-      
-      <section className="py-20 px-4">
-        <div className="container mx-auto">
-          <h2 className="text-4xl font-bold text-center text-purple-800 mb-12">Why ElixirCache?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <FeatureSection 
-              title="Blazing Fast"
-              description="Experience unparalleled speed with our optimized in-memory storage system."
-              icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-12 h-12">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>}
-            />
-            <FeatureSection 
-              title="Highly Scalable"
-              description="Grow your application with confidence, knowing ElixirCache can handle the load."
-              icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-12 h-12">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>}
-            />
-            <FeatureSection 
-              title="Easy Integration"
-              description="Seamlessly integrate with your existing stack using our comprehensive API."
-              icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-12 h-12">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
-              </svg>}
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-purple-900 text-white py-20 px-4">
-        <div className="container mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-8">Ready to supercharge your application?</h2>
-          <button className="bg-white text-purple-900 px-8 py-3 rounded-full text-lg font-semibold hover:bg-purple-200 transition duration-300">
-            Get Started Now
-          </button>
-        </div>
-      </section>
-
-      <footer className="bg-gray-800 text-white py-8">
-        <div className="container mx-auto text-center">
-          <p>&copy; 2024 ElixirCache. All rights reserved.</p>
-        </div>
-      </footer>
-    </div>
-  );
-};
-
-export default ElixirCacheLanding;
+export default ElixirCacheLandingPage;
