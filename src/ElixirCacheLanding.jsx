@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { FiZap, FiServer, FiDatabase, FiCloud, FiCpu, FiLayers, FiSend, FiDownload, FiCode } from 'react-icons/fi';
 import ElixirCacheHero from './ElixirCacheHero';
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -74,6 +74,7 @@ const FeatureDescription = styled.p`
 const ShowcaseSection = styled.section`
   padding: 6rem 2rem;
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  overflow: hidden;
 `;
 
 const ShowcaseContainer = styled.div`
@@ -92,20 +93,52 @@ const ShowcaseGrid = styled.div`
   }
 `;
 
-const CodeBlock = styled(SyntaxHighlighter)`
+const CodeBlockWrapper = styled(motion.div)`
+  position: relative;
+  height: 400px;
+  overflow: hidden;
   border-radius: 1rem;
-  padding: 1.5rem !important;
-  font-size: 0.9rem !important;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  max-height: 400px;
-  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 `;
 
-const DemoContainer = styled.div`
+const StyledCodeBlock = styled(SyntaxHighlighter)`
+  height: 100%;
+  padding: 1.5rem !important;
+  font-size: 0.9rem !important;
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: #60a5fa #1e293b;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #1e293b;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #60a5fa;
+    border-radius: 20px;
+    border: 3px solid #1e293b;
+  }
+`;
+
+const ScrollIndicator = styled(motion.div)`
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 8px;
+  height: 100%;
+  background: rgba(96, 165, 250, 0.2);
+  border-radius: 4px;
+`;
+
+const DemoContainer = styled(motion.div)`
   background: rgba(30, 41, 59, 0.8);
   border-radius: 1rem;
   padding: 2rem;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -227,6 +260,9 @@ const ElixirCacheLandingPage = () => {
   const [result, setResult] = useState('');
   const [isSetMode, setIsSetMode] = useState(true);
   const socketRef = useRef(null);
+  const codeBlockRef = useRef(null);
+  const { scrollYProgress } = useScroll({ container: codeBlockRef });
+  const scrollIndicatorHeight = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
 
   useEffect(() => {
     socketRef.current = new WebSocket('wss://elixircache.gigalixirapp.com/ws/master');
@@ -356,16 +392,31 @@ sendCommand('GET mykey');
                 <FiCode />
                 Connect with Ease
               </DemoTitle>
-              <CodeBlock language="javascript" style={atomOneDark}>
-                {connectionCode}
-              </CodeBlock>
+              <CodeBlockWrapper
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <StyledCodeBlock
+                  language="javascript"
+                  style={atomOneDark}
+                  ref={codeBlockRef}
+                >
+                  {connectionCode}
+                </StyledCodeBlock>
+                <ScrollIndicator style={{ height: scrollIndicatorHeight }} />
+              </CodeBlockWrapper>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
             >
-              <DemoContainer>
+              <DemoContainer
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
                 <DemoTitle>Try it Out</DemoTitle>
                 <DemoContent>
                   <AnimatePresence mode="wait">

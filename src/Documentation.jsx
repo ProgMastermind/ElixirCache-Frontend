@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
-import { FiBook, FiServer, FiDatabase, FiCode, FiArrowRight } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiCode, FiServer, FiDatabase } from 'react-icons/fi';
 import CommandExplanation from './CommandExplanation';
 import ConnectionArchitecture from './ConnectionArchitecture';
 import MasterReplicaArchitecture from './MasterReplicaArchitecture';
@@ -58,6 +58,12 @@ const ContentContainer = styled(motion.div)`
 const DocumentationPage = () => {
   const [activeTab, setActiveTab] = useState('commands');
 
+  const tabContent = {
+    commands: <CommandExplanation />,
+    connection: <ConnectionArchitecture />,
+    masterReplica: <MasterReplicaArchitecture />
+  };
+
   return (
     <DocumentationContainer>
       <Title>ElixirCache Documentation</Title>
@@ -87,15 +93,17 @@ const DocumentationPage = () => {
           <FiDatabase /> Master-Replica Architecture
         </Tab>
       </TabContainer>
-      <ContentContainer
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        {activeTab === 'commands' && <CommandExplanation />}
-        {activeTab === 'connection' && <ConnectionArchitecture />}
-        {activeTab === 'masterReplica' && <MasterReplicaArchitecture />}
-      </ContentContainer>
+      <AnimatePresence mode="wait">
+        <ContentContainer
+          key={activeTab}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+        >
+          {tabContent[activeTab]}
+        </ContentContainer>
+      </AnimatePresence>
     </DocumentationContainer>
   );
 };

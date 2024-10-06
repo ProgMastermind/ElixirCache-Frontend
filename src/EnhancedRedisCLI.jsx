@@ -330,6 +330,7 @@ const EnhancedRedisCLI = () => {
 
   const handleMasterConnect = () => {
     masterWs.current = new WebSocket('wss://elixircache.gigalixirapp.com/ws/master');
+    // masterWs.current = new WebSocket('ws://localhost:3001/ws/master');
     masterWs.current.onopen = () => {
       setMasterConnected(true);
       setMasterOutput(prev => [...prev, '> Connected to Redis Master']);
