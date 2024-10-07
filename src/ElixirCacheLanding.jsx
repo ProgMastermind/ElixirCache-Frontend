@@ -2,10 +2,27 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-import { FiZap, FiServer, FiDatabase, FiCloud, FiCpu, FiLayers, FiSend, FiDownload, FiCode } from 'react-icons/fi';
+import { FiZap, FiServer, FiDatabase, FiCloud, FiCpu, FiLayers, FiSend, FiDownload, FiCode, FiBarChart2 } from 'react-icons/fi';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import ElixirCacheHero from './ElixirCacheHero';
-import SyntaxHighlighter from 'react-syntax-highlighter';
+import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import Footer from './Footer.';
+
+// Custom wrapper components to suppress warnings
+const CustomXAxis = ({ children, ...props }) => <XAxis {...props}>{children}</XAxis>;
+const CustomYAxis = ({ children, ...props }) => <YAxis {...props}>{children}</YAxis>;
+
+// Forwarded ref version of SyntaxHighlighter
+const ForwardedSyntaxHighlighter = React.forwardRef((props, ref) => {
+  return (
+    <div ref={ref} style={{ height: '100%', overflowY: 'hidden', overflowX: 'auto' }}>
+      <SyntaxHighlighter {...props} />
+    </div>
+  );
+});
+
+ForwardedSyntaxHighlighter.displayName = 'ForwardedSyntaxHighlighter';
 
 const LandingPage = styled.div`
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
@@ -101,16 +118,14 @@ const CodeBlockWrapper = styled(motion.div)`
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 `;
 
-const StyledCodeBlock = styled(SyntaxHighlighter)`
+const StyledCodeBlock = styled(ForwardedSyntaxHighlighter)`
   height: 100%;
   padding: 1.5rem !important;
   font-size: 0.9rem !important;
-  overflow-y: scroll;
-  scrollbar-width: thin;
-  scrollbar-color: #60a5fa #1e293b;
-
+  
   &::-webkit-scrollbar {
-    width: 8px;
+    height: 8px;
+    width: 0;
   }
 
   &::-webkit-scrollbar-track {
@@ -122,16 +137,6 @@ const StyledCodeBlock = styled(SyntaxHighlighter)`
     border-radius: 20px;
     border: 3px solid #1e293b;
   }
-`;
-
-const ScrollIndicator = styled(motion.div)`
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 8px;
-  height: 100%;
-  background: rgba(96, 165, 250, 0.2);
-  border-radius: 4px;
 `;
 
 const DemoContainer = styled(motion.div)`
@@ -226,33 +231,96 @@ const DemoResult = styled.div`
   word-break: break-all;
 `;
 
-const Footer = styled.footer`
-  background: #0f172a;
-  padding: 3rem 2rem;
-  text-align: center;
-  color: #94a3b8;
+const BenchmarkSection = styled.section`
+  padding: 6rem 2rem;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
 `;
 
-const FooterLinks = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  margin-bottom: 2rem;
+const BenchmarkContainer = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
 `;
 
-const FooterLink = styled(Link)`
-  color: #60a5fa;
-  text-decoration: none;
-  transition: color 0.3s ease;
+const BenchmarkGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
 
-  &:hover {
-    color: #34d399;
+  @media (max-width: 968px) {
+    grid-template-columns: 1fr;
   }
 `;
 
-const Copyright = styled.div`
-  font-size: 0.9rem;
+const BenchmarkMetrics = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
 `;
+
+const MetricCard = styled(motion.div)`
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+  }
+`;
+
+const MetricValue = styled.div`
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(to right, #60a5fa, #34d399);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+`;
+
+const MetricLabel = styled.div`
+  font-size: 1rem;
+  color: #94a3b8;
+`;
+
+const BenchmarkChart = styled.div`
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+`;
+
+const BenchmarkDescription = styled.p`
+  color: #94a3b8;
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 1.1rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+`;
+
+const LearnMoreButton = styled(Link)`
+  display: inline-block;
+  margin-top: 2rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(to right, #60a5fa, #34d399);
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-align: center;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+`;
+
 
 const ElixirCacheLandingPage = () => {
   const [key, setKey] = useState('');
@@ -261,8 +329,6 @@ const ElixirCacheLandingPage = () => {
   const [isSetMode, setIsSetMode] = useState(true);
   const socketRef = useRef(null);
   const codeBlockRef = useRef(null);
-  const { scrollYProgress } = useScroll({ container: codeBlockRef });
-  const scrollIndicatorHeight = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
 
   useEffect(() => {
     socketRef.current = new WebSocket('wss://elixircache.gigalixirapp.com/ws/master');
@@ -277,6 +343,14 @@ const ElixirCacheLandingPage = () => {
       if (data.type === 'COMMAND_RESULT') {
         setResult(data.result);
       }
+    };
+
+    socketRef.current.onerror = (error) => {
+      console.error('WebSocket Error:', error);
+    };
+
+    socketRef.current.onclose = (event) => {
+      console.log('WebSocket Closed:', event.code, event.reason);
     };
 
     return () => {
@@ -344,6 +418,11 @@ sendCommand('SET mykey myvalue');
 sendCommand('GET mykey');
   `.trim();
 
+  const benchmarkData = [
+    { name: 'GET', operations: 68695 },
+    { name: 'SET', operations: 68695 },
+  ];
+
   return (
     <LandingPage>
       <ElixirCacheHero />
@@ -404,7 +483,6 @@ sendCommand('GET mykey');
                 >
                   {connectionCode}
                 </StyledCodeBlock>
-                <ScrollIndicator style={{ height: scrollIndicatorHeight }} />
               </CodeBlockWrapper>
             </motion.div>
             <motion.div
@@ -474,15 +552,95 @@ sendCommand('GET mykey');
         </ShowcaseContainer>
       </ShowcaseSection>
 
-      <Footer>
-        <FooterLinks>
-          <FooterLink to="#features">Features</FooterLink>
-          <FooterLink to="#docs">Documentation</FooterLink>
-          <FooterLink as="a" href="https://github.com/yourusername/elixircache" target="_blank" rel="noopener noreferrer">GitHub</FooterLink>
-          <FooterLink to="#contact">Contact</FooterLink>
-        </FooterLinks>
-        <Copyright>© 2023 ElixirCache. All rights reserved.</Copyright>
-      </Footer>
+      <BenchmarkSection>
+        <BenchmarkContainer>
+          <SectionTitle
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            Unparalleled Performance
+          </SectionTitle>
+          <BenchmarkGrid>
+            <BenchmarkMetrics>
+              <MetricCard
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <MetricValue>137,390</MetricValue>
+                <MetricLabel>Ops/sec</MetricLabel>
+              </MetricCard>
+              <MetricCard
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+              >
+                <MetricValue>2.17ms</MetricValue>
+                <MetricLabel>Avg. Latency</MetricLabel>
+              </MetricCard>
+              <MetricCard
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+              >
+                <MetricValue>23.11</MetricValue>
+                <MetricLabel>MB/sec</MetricLabel>
+              </MetricCard>
+              <MetricCard
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+              >
+                <MetricValue>8.26ms</MetricValue>
+                <MetricLabel>p99 Latency</MetricLabel>
+              </MetricCard>
+            </BenchmarkMetrics>
+            <BenchmarkChart>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={benchmarkData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <CustomXAxis 
+                    dataKey="name" 
+                    height={40}
+                    tick={{fill: '#94a3b8', fontSize: 12}}
+                    tickLine={{stroke: '#94a3b8'}}
+                    axisLine={{stroke: '#94a3b8'}}
+                  />
+                  <CustomYAxis
+                    width={80}
+                    tick={{fill: '#94a3b8', fontSize: 12}}
+                    tickLine={{stroke: '#94a3b8'}}
+                    axisLine={{stroke: '#94a3b8'}}
+                  />
+                  <Tooltip 
+                    contentStyle={{
+                      background: 'rgba(30, 41, 59, 0.8)',
+                      border: 'none',
+                      borderRadius: '4px',
+                      color: '#94a3b8'
+                    }}
+                  />
+                  <Legend 
+                    wrapperStyle={{
+                      color: '#94a3b8'
+                    }}
+                  />
+                  <Bar dataKey="operations" fill="#60a5fa" name="Operations/sec" />
+                </BarChart>
+              </ResponsiveContainer>
+            </BenchmarkChart>
+          </BenchmarkGrid>
+          <BenchmarkDescription>
+            ElixirCache delivers exceptional performance, handling over 137,000 operations per second with an average latency of just 2.17ms. Our balanced read/write capabilities ensure consistent high-speed data access and storage.
+          </BenchmarkDescription>
+          <LearnMoreButton to="/benchmarks">
+            View Detailed Benchmark Results
+          </LearnMoreButton>
+        </BenchmarkContainer>
+      </BenchmarkSection>
+
+     <Footer />
     </LandingPage>
   );
 };

@@ -40,7 +40,7 @@ const NavBar = styled.nav`
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(15, 23, 42, 0.9); // Slightly darker, more opaque background
   backdrop-filter: blur(10px);
   position: fixed;
   top: 0;
@@ -76,22 +76,24 @@ const NavLinks = styled.div`
   gap: 1.5rem;
 `;
 
-const NavLink = styled(Link)`
-  color: #94a3b8;
+const NavLink = styled.a`
+  color: #94a3b8; // Lighter base color
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 500; // Increased font weight
+  font-size: 1 rem; // Slightly larger font size
   transition: all 0.3s ease;
   position: relative;
   padding: 0.5rem 0;
+  cursor: pointer;
 
   &:hover {
-    color: #60a5fa;
+    color: #60a5fa; // Brighter color on hover
   }
 
   &::after {
     content: '';
     position: absolute;
-    bottom: 0;
+    bottom: -2px;
     left: 0;
     width: 100%;
     height: 2px;
@@ -366,6 +368,13 @@ const ElixirCacheHero = () => {
     }));
   }, [controls]);
 
+  const scrollToFeatures = () => {
+    const featuresSection = document.getElementById('features');
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <HeroContainer>
       <AnimatedBackground />
@@ -397,10 +406,9 @@ const ElixirCacheHero = () => {
           <LogoText>ElixirCache</LogoText>
         </Logo>
         <NavLinks>
-          <NavLink href="#features">Features</NavLink>
-          <NavLink href="#pricing">Pricing</NavLink>
-          <NavLink href="#docs">Docs</NavLink>
-          <NavLink href="#contact">Contact</NavLink>
+          <NavLink onClick={scrollToFeatures}>Features</NavLink>
+          <NavLink href="/benchmarks">Benchmarks</NavLink>
+          <NavLink href="/documentation">Docs</NavLink>
         </NavLinks>
       </NavBar>
       <ContentWrapper>
