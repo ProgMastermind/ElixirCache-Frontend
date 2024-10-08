@@ -5,6 +5,7 @@ import {
   FiZap, FiServer, FiDatabase, FiCloud, FiCloudOff, 
   FiCpu, FiLayers, FiSend, FiPower, FiArrowLeft
 } from 'react-icons/fi';
+import CommandHelper from './CommanHelper';  
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -459,6 +460,9 @@ const EnhancedRedisCLI = () => {
     setSlaveInput('');
   };
 
+  const handleCommandSelect = (command) => {
+    setMasterInput(command);
+  };
 
   const renderInstance = (instance) => (
     <InstanceCard
@@ -526,6 +530,7 @@ const EnhancedRedisCLI = () => {
             ))}
           </StepContainer>
         </ReplicationProgress>
+        
         <InstancesContainer>
           {renderInstance({
             type: 'Master',
@@ -548,6 +553,7 @@ const EnhancedRedisCLI = () => {
             outputRef: slaveOutputRef,
           })}
         </InstancesContainer>
+        <CommandHelper onCommandSelect={handleCommandSelect} />
       </AppContainer>
     </ThemeProvider>
   );
