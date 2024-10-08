@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -149,6 +149,12 @@ const ContentContainer = styled(motion.div)`
 
 const DocumentationPage = () => {
   const [activeTab, setActiveTab] = useState('commands');
+
+  useEffect(() => {
+    return () => {
+      setActiveTab('commands'); 
+    };
+  }, []);
 
   const tabContent = {
     commands: <CommandExplanation />,

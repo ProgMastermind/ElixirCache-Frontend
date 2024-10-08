@@ -342,6 +342,19 @@ const ElixirCacheLandingPage = () => {
   const [isSetMode, setIsSetMode] = useState(true);
   const socketRef = useRef(null);
   const codeBlockRef = useRef(null);
+  
+  const parseRESP = (response) => {
+    if (response.startsWith('+')) {
+      return response.substring(1).trim();
+    } else if (response.startsWith('$')) {
+      const [length, value] = response.substring(1).split('\r\n');
+      if (parseInt(length) === -1) {
+        return '(nil)';
+      }
+      return value;
+    }
+    return response; 
+  };
 
   useEffect(() => {
     socketRef.current = new WebSocket('wss://elixircache.gigalixirapp.com/ws/master');
@@ -354,7 +367,8 @@ const ElixirCacheLandingPage = () => {
       const data = JSON.parse(event.data);
       console.log('Received response:', data);
       if (data.type === 'COMMAND_RESULT') {
-        setResult(data.result);
+        const parsedResult = parseRESP(data.result);
+        setResult(parsedResult);
       }
     };
 

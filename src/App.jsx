@@ -6,11 +6,13 @@ import DocumentationPage from './Documentation';
 import BenchmarkPage from './BenchMarkPage';
 import { HelmetProvider } from 'react-helmet-async';
 import { Analytics } from '@vercel/analytics/react';
+import ScrollToTop from './ScrollToTop';
 
 const App = () => {
   return (
     <HelmetProvider>
       <Router>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<ElixirCacheLanding />} />
           <Route path="/demo" element={<EnhancedRedisCLI />} />
