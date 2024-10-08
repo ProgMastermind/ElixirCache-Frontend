@@ -1,13 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FiZap, FiServer, FiDatabase, FiCloud, FiCpu, FiLayers, FiSend, FiDownload, FiCode, FiBarChart2 } from 'react-icons/fi';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import ElixirCacheHero from './ElixirCacheHero';
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
-import atomOneDark from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark';
-import Footer from './Footer.';
+import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
+import js from 'react-syntax-highlighter/dist/esm/languages/prism/javascript';
+import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import Footer from './Footer';
+import { Helmet } from 'react-helmet-async';
+
+SyntaxHighlighter.registerLanguage('javascript', js);
 
 // Custom wrapper components to suppress warnings
 const CustomXAxis = ({ children, ...props }) => <XAxis {...props}>{children}</XAxis>;
@@ -17,7 +21,7 @@ const CustomYAxis = ({ children, ...props }) => <YAxis {...props}>{children}</YA
 const ForwardedSyntaxHighlighter = React.forwardRef((props, ref) => {
   return (
     <div ref={ref} style={{ height: '100%', overflowY: 'hidden', overflowX: 'auto' }}>
-      <SyntaxHighlighter {...props} />
+      <SyntaxHighlighter {...props} style={atomDark} />
     </div>
   );
 });
@@ -122,6 +126,16 @@ const StyledCodeBlock = styled(ForwardedSyntaxHighlighter)`
   height: 100%;
   padding: 1.5rem !important;
   font-size: 0.9rem !important;
+  
+  background: transparent !important;
+  
+  & pre {
+    background: transparent !important;
+  }
+  
+  & code {
+    font-family: 'JetBrains Mono', monospace !important;
+  }
   
   &::-webkit-scrollbar {
     height: 8px;
@@ -321,7 +335,6 @@ const LearnMoreButton = styled(Link)`
   }
 `;
 
-
 const ElixirCacheLandingPage = () => {
   const [key, setKey] = useState('');
   const [value, setValue] = useState('');
@@ -424,224 +437,228 @@ sendCommand('GET mykey');
   ];
 
   return (
-    <LandingPage>
-      <ElixirCacheHero />
+    <>
+      <Helmet>
+        <link href="https://fonts.googleapis.com/css2?family=Fira+Code&family=Inter:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet" />
+      </Helmet>
+      <LandingPage>
+        <ElixirCacheHero />
 
-      <FeaturesSection id="features">
-        <SectionTitle
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          Why Choose ElixirCache?
-        </SectionTitle>
-        <FeatureGrid>
-          {features.map((feature, index) => (
-            <FeatureCard
-              key={index}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
-            >
-              <FeatureIcon>{feature.icon}</FeatureIcon>
-              <FeatureTitle>{feature.title}</FeatureTitle>
-              <FeatureDescription>{feature.description}</FeatureDescription>
-            </FeatureCard>
-          ))}
-        </FeatureGrid>
-      </FeaturesSection>
-
-      <ShowcaseSection>
-        <ShowcaseContainer>
+        <FeaturesSection id="features">
           <SectionTitle
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            Experience the Power of ElixirCache
+            Why Choose ElixirCache?
           </SectionTitle>
-          <ShowcaseGrid>
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-            >
-              <DemoTitle>
-                <FiCode />
-                Connect with Ease
-              </DemoTitle>
-              <CodeBlockWrapper
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.5 }}
+          <FeatureGrid>
+            {features.map((feature, index) => (
+              <FeatureCard
+                key={index}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
               >
-                <StyledCodeBlock
-                  language="javascript"
-                  style={atomOneDark}
-                  ref={codeBlockRef}
+                <FeatureIcon>{feature.icon}</FeatureIcon>
+                <FeatureTitle>{feature.title}</FeatureTitle>
+                <FeatureDescription>{feature.description}</FeatureDescription>
+              </FeatureCard>
+            ))}
+          </FeatureGrid>
+        </FeaturesSection>
+
+        <ShowcaseSection>
+          <ShowcaseContainer>
+            <SectionTitle
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              Experience the Power of ElixirCache
+            </SectionTitle>
+            <ShowcaseGrid>
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+              >
+                <DemoTitle>
+                  <FiCode />
+                  Connect with Ease
+                </DemoTitle>
+                <CodeBlockWrapper
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.5 }}
                 >
-                  {connectionCode}
-                </StyledCodeBlock>
-              </CodeBlockWrapper>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
+                  <StyledCodeBlock
+                    language="javascript"
+                    ref={codeBlockRef}
+                  >
+                    {connectionCode}
+                  </StyledCodeBlock>
+                </CodeBlockWrapper>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+              >
+                <DemoContainer
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                  <DemoTitle>Try it Out</DemoTitle>
+                  <DemoContent>
+                    <AnimatePresence mode="wait">
+                      {isSetMode ? (
+                        <DemoInputGroup
+                          key="set"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <DemoInput
+                            type="text"
+                            placeholder="Key"
+                            value={key}
+                            onChange={(e) => setKey(e.target.value)}
+                          />
+                          <DemoInput
+                            type="text"
+                            placeholder="Value"
+                            value={value}
+                            onChange={(e) => setValue(e.target.value)}
+                          />
+                        </DemoInputGroup>
+                      ) : (
+                        <DemoInputGroup
+                          key="get"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <DemoInput
+                            type="text"
+                            placeholder="Key"
+                            value={key}
+                            onChange={(e) => setKey(e.target.value)}
+                          />
+                        </DemoInputGroup>
+                      )}
+                    </AnimatePresence>
+                    <ButtonGroup>
+                      <DemoButton onClick={handleSet} disabled={!isSetMode}>
+                        <FiSend /> SET
+                      </DemoButton>
+                      <DemoButton onClick={handleGet} disabled={isSetMode}>
+                        <FiDownload /> GET
+                      </DemoButton>
+                    </ButtonGroup>
+                    {result && <DemoResult>{result}</DemoResult>}
+                  </DemoContent>
+                </DemoContainer>
+              </motion.div>
+            </ShowcaseGrid>
+          </ShowcaseContainer>
+        </ShowcaseSection>
+
+        <BenchmarkSection>
+          <BenchmarkContainer>
+            <SectionTitle
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <DemoContainer
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                <DemoTitle>Try it Out</DemoTitle>
-                <DemoContent>
-                  <AnimatePresence mode="wait">
-                    {isSetMode ? (
-                      <DemoInputGroup
-                        key="set"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <DemoInput
-                          type="text"
-                          placeholder="Key"
-                          value={key}
-                          onChange={(e) => setKey(e.target.value)}
-                        />
-                        <DemoInput
-                          type="text"
-                          placeholder="Value"
-                          value={value}
-                          onChange={(e) => setValue(e.target.value)}
-                        />
-                      </DemoInputGroup>
-                    ) : (
-                      <DemoInputGroup
-                        key="get"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <DemoInput
-                          type="text"
-                          placeholder="Key"
-                          value={key}
-                          onChange={(e) => setKey(e.target.value)}
-                        />
-                      </DemoInputGroup>
-                    )}
-                  </AnimatePresence>
-                  <ButtonGroup>
-                    <DemoButton onClick={handleSet} disabled={!isSetMode}>
-                      <FiSend /> SET
-                    </DemoButton>
-                    <DemoButton onClick={handleGet} disabled={isSetMode}>
-                      <FiDownload /> GET
-                    </DemoButton>
-                  </ButtonGroup>
-                  {result && <DemoResult>{result}</DemoResult>}
-                </DemoContent>
-              </DemoContainer>
-            </motion.div>
-          </ShowcaseGrid>
-        </ShowcaseContainer>
-      </ShowcaseSection>
+              Unparalleled Performance
+            </SectionTitle>
+            <BenchmarkGrid>
+              <BenchmarkMetrics>
+                <MetricCard
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                >
+                  <MetricValue>137,390</MetricValue>
+                  <MetricLabel>Ops/sec</MetricLabel>
+                </MetricCard>
+                <MetricCard
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                >
+                  <MetricValue>2.17ms</MetricValue>
+                  <MetricLabel>Avg. Latency</MetricLabel>
+                </MetricCard>
+                <MetricCard
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                >
+                  <MetricValue>23.11</MetricValue>
+                  <MetricLabel>MB/sec</MetricLabel>
+                </MetricCard>
+                <MetricCard
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.6 }}
+                >
+                  <MetricValue>8.26ms</MetricValue>
+                  <MetricLabel>p99 Latency</MetricLabel>
+                </MetricCard>
+              </BenchmarkMetrics>
+              <BenchmarkChart>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={benchmarkData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <CustomXAxis 
+                      dataKey="name" 
+                      height={40}
+                      tick={{fill: '#94a3b8', fontSize: 12}}
+                      tickLine={{stroke: '#94a3b8'}}
+                      axisLine={{stroke: '#94a3b8'}}
+                    />
+                    <CustomYAxis
+                      width={80}
+                      tick={{fill: '#94a3b8', fontSize: 12}}
+                      tickLine={{stroke: '#94a3b8'}}
+                      axisLine={{stroke: '#94a3b8'}}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        background: 'rgba(30, 41, 59, 0.8)',
+                        border: 'none',
+                        borderRadius: '4px',
+                        color: '#94a3b8'
+                      }}
+                    />
+                    <Legend 
+                      wrapperStyle={{
+                        color: '#94a3b8'
+                      }}
+                    />
+                    <Bar dataKey="operations" fill="#60a5fa" name="Operations/sec" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </BenchmarkChart>
+            </BenchmarkGrid>
+            <BenchmarkDescription>
+              ElixirCache delivers exceptional performance, handling over 137,000 operations per second with an average latency of just 2.17ms. Our balanced read/write capabilities ensure consistent high-speed data access and storage.
+            </BenchmarkDescription>
+            <LearnMoreButton to="/benchmarks">
+              View Detailed Benchmark Results
+            </LearnMoreButton>
+          </BenchmarkContainer>
+        </BenchmarkSection>
 
-      <BenchmarkSection>
-        <BenchmarkContainer>
-          <SectionTitle
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            Unparalleled Performance
-          </SectionTitle>
-          <BenchmarkGrid>
-            <BenchmarkMetrics>
-              <MetricCard
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                <MetricValue>137,390</MetricValue>
-                <MetricLabel>Ops/sec</MetricLabel>
-              </MetricCard>
-              <MetricCard
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-              >
-                <MetricValue>2.17ms</MetricValue>
-                <MetricLabel>Avg. Latency</MetricLabel>
-              </MetricCard>
-              <MetricCard
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
-              >
-                <MetricValue>23.11</MetricValue>
-                <MetricLabel>MB/sec</MetricLabel>
-              </MetricCard>
-              <MetricCard
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
-              >
-                <MetricValue>8.26ms</MetricValue>
-                <MetricLabel>p99 Latency</MetricLabel>
-              </MetricCard>
-            </BenchmarkMetrics>
-            <BenchmarkChart>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={benchmarkData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <CustomXAxis 
-                    dataKey="name" 
-                    height={40}
-                    tick={{fill: '#94a3b8', fontSize: 12}}
-                    tickLine={{stroke: '#94a3b8'}}
-                    axisLine={{stroke: '#94a3b8'}}
-                  />
-                  <CustomYAxis
-                    width={80}
-                    tick={{fill: '#94a3b8', fontSize: 12}}
-                    tickLine={{stroke: '#94a3b8'}}
-                    axisLine={{stroke: '#94a3b8'}}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      background: 'rgba(30, 41, 59, 0.8)',
-                      border: 'none',
-                      borderRadius: '4px',
-                      color: '#94a3b8'
-                    }}
-                  />
-                  <Legend 
-                    wrapperStyle={{
-                      color: '#94a3b8'
-                    }}
-                  />
-                  <Bar dataKey="operations" fill="#60a5fa" name="Operations/sec" />
-                </BarChart>
-              </ResponsiveContainer>
-            </BenchmarkChart>
-          </BenchmarkGrid>
-          <BenchmarkDescription>
-            ElixirCache delivers exceptional performance, handling over 137,000 operations per second with an average latency of just 2.17ms. Our balanced read/write capabilities ensure consistent high-speed data access and storage.
-          </BenchmarkDescription>
-          <LearnMoreButton to="/benchmarks">
-            View Detailed Benchmark Results
-          </LearnMoreButton>
-        </BenchmarkContainer>
-      </BenchmarkSection>
-
-     <Footer />
-    </LandingPage>
+        <Footer />
+      </LandingPage>
+    </>
   );
 };
 
