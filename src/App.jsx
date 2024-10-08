@@ -5,6 +5,7 @@ import EnhancedRedisCLI from './EnhancedRedisCLI';
 import DocumentationPage from './Documentation';
 import BenchmarkPage from './BenchMarkPage';
 import { HelmetProvider } from 'react-helmet-async';
+import { Analytics } from '@vercel/analytics/react';
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
           <Route path="/documentation" element={<DocumentationPage />} />
           <Route path="/benchmarks" element={<BenchmarkPage />} />
         </Routes>
+        <Analytics />
       </Router>
     </HelmetProvider>
   );

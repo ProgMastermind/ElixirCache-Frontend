@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import styled, { ThemeProvider, createGlobalStyle, keyframes, css } from 'styled-components';
+import styled, { ThemeProvider, createGlobalStyle, keyframes } from 'styled-components';
 import { motion } from 'framer-motion';
 import { 
   FiZap, FiServer, FiDatabase, FiCloud, FiCloudOff, 
-  FiCpu, FiLayers, FiSend, FiPower, FiMoon, FiSun
+  FiCpu, FiLayers, FiSend, FiPower, FiArrowLeft
 } from 'react-icons/fi';
 
 const GlobalStyle = createGlobalStyle`
@@ -17,22 +17,7 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
-const lightTheme = {
-  colors: {
-    primary: '#3B82F6',
-    secondary: '#10B981',
-    background: '#F3F4F6',
-    paper: '#FFFFFF',
-    text: '#1F2937',
-    error: '#EF4444',
-    success: '#10B981',
-    heading: 'linear-gradient(to right, #3B82F6, #10B981)',
-    button: 'linear-gradient(to right, #3B82F6, #10B981)',
-    connectionBar: '#D1D5DB',
-  },
-};
-
-const darkTheme = {
+const theme = {
   colors: {
     primary: '#60A5FA',
     secondary: '#34D399',
@@ -76,12 +61,17 @@ const Title = styled.h1`
   background-size: 200% 200%;
 `;
 
-const ThemeToggle = styled.button`
-  background: none;
-  border: none;
+const BackLink = styled.a`
   color: ${props => props.theme.colors.text};
-  cursor: pointer;
-  font-size: 1.5rem;
+  text-decoration: none;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:hover {
+    color: ${props => props.theme.colors.primary};
+  }
 `;
 
 const ReplicationProgress = styled.div`
@@ -284,7 +274,6 @@ const Button = styled.button`
 `;
 
 const EnhancedRedisCLI = () => {
-  const [darkMode, setDarkMode] = useState(true);
   const [masterConnected, setMasterConnected] = useState(false);
   const [slaveConnected, setSlaveConnected] = useState(false);
   const [masterOutput, setMasterOutput] = useState([]);
@@ -330,7 +319,6 @@ const EnhancedRedisCLI = () => {
 
   const handleMasterConnect = () => {
     masterWs.current = new WebSocket('wss://elixircache.gigalixirapp.com/ws/master');
-    // masterWs.current = new WebSocket('ws://localhost:3001/ws/master');
     masterWs.current.onopen = () => {
       setMasterConnected(true);
       setMasterOutput(prev => [...prev, '> Connected to Redis Master']);
@@ -471,6 +459,7 @@ const EnhancedRedisCLI = () => {
     setSlaveInput('');
   };
 
+
   const renderInstance = (instance) => (
     <InstanceCard
       key={instance.type}
@@ -515,14 +504,14 @@ const EnhancedRedisCLI = () => {
   );
 
   return (
-    <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
+    <ThemeProvider theme={theme}>
       <GlobalStyle />
       <AppContainer>
         <Header>
           <Title>ElixirCache Replication Demo</Title>
-          <ThemeToggle onClick={() => setDarkMode(!darkMode)}>
-            {darkMode ? <FiSun /> : <FiMoon />}
-          </ThemeToggle>
+          <BackLink href="/">
+            <FiArrowLeft /> Back to Home
+          </BackLink>
         </Header>
         <ReplicationProgress>
           <ProgressTitle>Replication Handshake Process</ProgressTitle>

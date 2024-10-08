@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiCode, FiServer, FiDatabase } from 'react-icons/fi';
@@ -10,7 +11,98 @@ const DocumentationContainer = styled.div`
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   min-height: 100vh;
   color: #f3f4f6;
-  padding: 2rem;
+`;
+
+const NavBar = styled.nav`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(10px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+`;
+
+const Logo = styled(Link)`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #60a5fa;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const SmallLogo = styled.div`
+  width: 40px;
+  height: 40px;
+`;
+
+const LogoSVG = styled.svg`
+  width: 100%;
+  height: 100%;
+`;
+
+const LogoText = styled.span`
+  background: linear-gradient(to right, #60a5fa, #34d399);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 1.5rem;
+  font-weight: 900;
+`;
+
+const NavLinks = styled.div`
+  display: flex;
+  gap: 1.5rem;
+`;
+
+const NavLink = styled(Link)`
+  color: #94a3b8;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 0.5rem 0;
+
+  &:hover {
+    color: #60a5fa;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, #60a5fa, #34d399);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+
+  &:hover::after {
+    transform: scaleX(1);
+  }
+
+  &.active {
+    color: #60a5fa;
+  }
+
+  &.active::after {
+    transform: scaleX(1);
+  }
+`;
+
+const ContentWrapper = styled.div`
+  padding-top: 5rem;
+  padding: 7rem 2rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 `;
 
 const Title = styled.h1`
@@ -66,44 +158,79 @@ const DocumentationPage = () => {
 
   return (
     <DocumentationContainer>
-      <Title>ElixirCache Documentation</Title>
-      <TabContainer>
-        <Tab
-          active={activeTab === 'commands'}
-          onClick={() => setActiveTab('commands')}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <FiCode /> Commands
-        </Tab>
-        <Tab
-          active={activeTab === 'connection'}
-          onClick={() => setActiveTab('connection')}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <FiServer /> Connection Architecture
-        </Tab>
-        <Tab
-          active={activeTab === 'masterReplica'}
-          onClick={() => setActiveTab('masterReplica')}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <FiDatabase /> Master-Replica Architecture
-        </Tab>
-      </TabContainer>
-      <AnimatePresence mode="wait">
-        <ContentContainer
-          key={activeTab}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-        >
-          {tabContent[activeTab]}
-        </ContentContainer>
-      </AnimatePresence>
+      <NavBar>
+        <Logo to="/">
+          <SmallLogo>
+            <LogoSVG viewBox="0 0 200 200">
+              <defs>
+                <linearGradient id="smallLogoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#60a5fa" />
+                  <stop offset="100%" stopColor="#34d399" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M100,10 L178,55 L178,145 L100,190 L22,145 L22,55 Z"
+                fill="none"
+                stroke="url(#smallLogoGradient)"
+                strokeWidth="10"
+              />
+              <path
+                d="M100,40 L150,70 L150,130 L100,160 L50,130 L50,70 Z"
+                fill="none"
+                stroke="url(#smallLogoGradient)"
+                strokeWidth="8"
+              />
+              <circle cx="100" cy="100" r="30" fill="url(#smallLogoGradient)" />
+            </LogoSVG>
+          </SmallLogo>
+          <LogoText>ElixirCache</LogoText>
+        </Logo>
+        <NavLinks>
+          <NavLink to="/">Home</NavLink>
+          <NavLink to="/benchmarks">Benchmarks</NavLink>
+          <NavLink to="/documentation" className="active">Docs</NavLink>
+        </NavLinks>
+      </NavBar>
+      <ContentWrapper>
+        <Title>ElixirCache Documentation</Title>
+        <TabContainer>
+          <Tab
+            active={activeTab === 'commands'}
+            onClick={() => setActiveTab('commands')}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <FiCode /> Commands
+          </Tab>
+          <Tab
+            active={activeTab === 'connection'}
+            onClick={() => setActiveTab('connection')}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <FiServer /> Connection Architecture
+          </Tab>
+          <Tab
+            active={activeTab === 'masterReplica'}
+            onClick={() => setActiveTab('masterReplica')}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <FiDatabase /> Master-Replica Architecture
+          </Tab>
+        </TabContainer>
+        <AnimatePresence mode="wait">
+          <ContentContainer
+            key={activeTab}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            {tabContent[activeTab]}
+          </ContentContainer>
+        </AnimatePresence>
+      </ContentWrapper>
     </DocumentationContainer>
   );
 };
