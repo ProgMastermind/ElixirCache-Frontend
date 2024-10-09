@@ -19,9 +19,18 @@ const CustomYAxis = ({ children, ...props }) => <YAxis {...props}>{children}</YA
 
 // Forwarded ref version of SyntaxHighlighter
 const ForwardedSyntaxHighlighter = React.forwardRef((props, ref) => {
+  const [key, setKey] = useState(0);
+
+  useEffect(() => {
+    // Force re-render after component mount
+    setKey(prev => prev + 1);
+  }, []);
+
   return (
     <div ref={ref} style={{ height: '100%', overflowY: 'hidden', overflowX: 'auto' }}>
-      <SyntaxHighlighter {...props} style={atomDark} />
+      <SyntaxHighlighter key={key} {...props} style={atomDark}>
+        {props.children}
+      </SyntaxHighlighter>
     </div>
   );
 });
@@ -152,6 +161,28 @@ const StyledCodeBlock = styled(ForwardedSyntaxHighlighter)`
     border: 3px solid #1e293b;
   }
 `;
+
+const CodeBlock = ({ code }) => {
+  const [key, setKey] = useState(0);
+
+  useEffect(() => {
+    // Force re-render after component mount
+    setKey(prev => prev + 1);
+  }, []);
+
+  return (
+    <CodeBlockWrapper
+      key={key}
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <StyledCodeBlock language="javascript">
+        {code}
+      </StyledCodeBlock>
+    </CodeBlockWrapper>
+  );
+};
 
 const DemoContainer = styled(motion.div)`
   background: rgba(30, 41, 59, 0.8);
@@ -340,8 +371,8 @@ const ElixirCacheLandingPage = () => {
   const [value, setValue] = useState('');
   const [result, setResult] = useState('');
   const [isSetMode, setIsSetMode] = useState(true);
+  const [isCodeLoaded, setIsCodeLoaded] = useState(false);
   const socketRef = useRef(null);
-  const codeBlockRef = useRef(null);
   
   const parseRESP = (response) => {
     if (response.startsWith('+')) {
@@ -379,6 +410,8 @@ const ElixirCacheLandingPage = () => {
     socketRef.current.onclose = (event) => {
       console.log('WebSocket Closed:', event.code, event.reason);
     };
+
+    setIsCodeLoaded(true);
 
     return () => {
       if (socketRef.current) socketRef.current.close();
@@ -502,18 +535,11 @@ sendCommand('GET mykey');
                   <FiCode />
                   Connect with Ease
                 </DemoTitle>
-                <CodeBlockWrapper
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <StyledCodeBlock
-                    language="javascript"
-                    ref={codeBlockRef}
-                  >
-                    {connectionCode}
-                  </StyledCodeBlock>
-                </CodeBlockWrapper>
+                {isCodeLoaded ? (
+                  <CodeBlock code={connectionCode} />
+                ) : (
+                  <div>Loading code...</div>
+                )}
               </motion.div>
               <motion.div
                 initial={{ opacity: 0, x: 50 }}
