@@ -3,6 +3,7 @@ import styled, { keyframes } from 'styled-components';
 import { motion, useAnimation } from 'framer-motion';
 import { FiZap, FiBook, FiDatabase, FiServer, FiCloud, FiHardDrive, FiCpu, FiLayers } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
+import DesktopModePopup from './DesktopModePopup';
 
 const gradientAnimation = keyframes`
   0% { background-position: 0% 50%; }
@@ -493,6 +494,7 @@ const ElixirCacheHero = () => {
           />
         </LogoContainer>
       </ContentWrapper>
+      <DesktopModePopup />
     </HeroContainer>
   );
 };
