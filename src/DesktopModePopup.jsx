@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
-import { FiMonitor, FiX } from 'react-icons/fi';
+import { FiMonitor } from 'react-icons/fi';
 
 const slideUp = keyframes`
   from { transform: translateY(100%); opacity: 0; }
@@ -19,86 +19,63 @@ const PopupContainer = styled.div`
   animation: ${slideUp} 0.3s ease-out;
   border-top: 1px solid #60a5fa;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+`;
+
+const PopupContent = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const IconWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(96, 165, 250, 0.2);
+  border-radius: 50%;
+  padding: 8px;
 `;
 
 const PopupText = styled.p`
   margin: 0;
   font-size: 0.875rem;
-  line-height: 1.5;
-  display: flex;
-  align-items: center;
-`;
-
-const CancelButton = styled.button`
-  background: none;
-  border: none;
-  color: #60a5fa;
-  font-size: 1.25rem;
-  cursor: pointer;
-  padding: 5px;
-  display: flex;
-  align-items: center;
-  transition: opacity 0.2s ease;
-
-  &:hover {
-    opacity: 0.8;
-  }
+  line-height: 1.4;
+  text-align: left;
 `;
 
 const DesktopModePopup = () => {
   const [isVisible, setIsVisible] = useState(false);
 
-  const checkMobileAndViewport = useCallback(() => {
-    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const isNarrowScreen = window.innerWidth < 768;
-    const viewportWidth = document.documentElement.clientWidth;
-    const isLikelyDesktopMode = viewportWidth > window.innerWidth * 1.2;
-
-    setIsVisible(isMobileDevice && isNarrowScreen && !isLikelyDesktopMode);
-  }, []);
-
   useEffect(() => {
-    checkMobileAndViewport();
-
-    const handleResize = debounce(checkMobileAndViewport, 250);
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', checkMobileAndViewport);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', checkMobileAndViewport);
+    const checkMobile = () => {
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isNarrowScreen = window.innerWidth < 768;
+      setIsVisible(isMobileDevice && isNarrowScreen);
     };
-  }, [checkMobileAndViewport]);
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   if (!isVisible) return null;
 
   return (
     <PopupContainer>
-      <PopupText>
-        <FiMonitor style={{ marginRight: '8px', color: '#60a5fa' }} />
-        For best experience,<br />switch to desktop version.
-      </PopupText>
-      <CancelButton onClick={() => setIsVisible(false)} aria-label="Close">
-        <FiX />
-      </CancelButton>
+      <PopupContent>
+        <IconWrapper>
+          <FiMonitor size={20} color="#60a5fa" />
+        </IconWrapper>
+        <PopupText>
+          For best experience,<br />switch to desktop version.
+        </PopupText>
+      </PopupContent>
     </PopupContainer>
   );
 };
-
-// Utility function for debouncing
-function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
 
 export default DesktopModePopup;
