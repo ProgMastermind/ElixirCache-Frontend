@@ -19,27 +19,15 @@ const PopupContainer = styled.div`
   animation: ${slideUp} 0.3s ease-out;
   border-top: 1px solid #60a5fa;
   display: flex;
-  justify-content: center;
   align-items: center;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 `;
 
-const PopupContent = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  max-width: 100%;
-  overflow: hidden;
-`;
-
 const IconWrapper = styled.div`
-  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(96, 165, 250, 0.2);
-  border-radius: 50%;
-  padding: 8px;
+  margin-right: 12px;
 `;
 
 const PopupText = styled.p`
@@ -70,14 +58,12 @@ const DesktopModePopup = () => {
 
   return (
     <PopupContainer>
-      <PopupContent>
-        <IconWrapper>
-          <FiMonitor size={20} color="#60a5fa" />
-        </IconWrapper>
-        <PopupText>
-          For best experience, switch to desktop version
-        </PopupText>
-      </PopupContent>
+      <IconWrapper>
+        <FiMonitor size={20} color="#60a5fa" />
+      </IconWrapper>
+      <PopupText>
+        For best experience, switch to desktop version
+      </PopupText>
     </PopupContainer>
   );
 };
