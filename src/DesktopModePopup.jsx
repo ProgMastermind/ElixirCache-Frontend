@@ -28,9 +28,12 @@ const PopupContent = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+  max-width: 100%;
+  overflow: hidden;
 `;
 
 const IconWrapper = styled.div`
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -42,8 +45,9 @@ const IconWrapper = styled.div`
 const PopupText = styled.p`
   margin: 0;
   font-size: 0.875rem;
-  line-height: 1.4;
-  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const DesktopModePopup = () => {
@@ -71,7 +75,7 @@ const DesktopModePopup = () => {
           <FiMonitor size={20} color="#60a5fa" />
         </IconWrapper>
         <PopupText>
-          For best experience,<br />switch to desktop version.
+          For best experience, switch to desktop version
         </PopupText>
       </PopupContent>
     </PopupContainer>
