@@ -79,7 +79,7 @@ const DesktopModePopup = () => {
     <PopupContainer>
       <PopupText>
         <FiMonitor style={{ marginRight: '8px', color: '#60a5fa' }} />
-        For the best experience, please switch to desktop mode.
+        For best experience,<br />switch to desktop version.
       </PopupText>
       <CancelButton onClick={() => setIsVisible(false)} aria-label="Close">
         <FiX />
