@@ -494,7 +494,7 @@ const ElixirCacheHero = () => {
           />
         </LogoContainer>
       </ContentWrapper>
-      {/* <DesktopModePopup /> */}
+      <DesktopModePopup />
     </HeroContainer>
   );
 };
